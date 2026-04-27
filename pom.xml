@@ -15,7 +15,7 @@
     <artifactId>ompass-sdk-java-spring-boot-example</artifactId>
     <version>1.0.0</version>
     <name>OMPASS SDK Java Spring Boot Example</name>
-    <description>OMPASS Java SDK 연동 예제 애플리케이션</description>
+    <description>OMPASS Java SDK integration example application</description>
 
     <properties>
         <java.version>17</java.version>
