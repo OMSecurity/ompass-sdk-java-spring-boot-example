@@ -47,17 +47,17 @@ sequenceDiagram
 
 | Layer | Technology |
 |-------|------------|
-| Runtime | Java 17 |
+| Runtime | Java 17 (this example) — **OMPASS SDK supports Java 8+** |
 | Framework | Spring Boot 3.2.0 |
 | Web view | Thymeleaf + `thymeleaf-extras-springsecurity6` |
 | Security | Spring Security |
 | Persistence | Spring Data JPA + H2 (in-memory) |
-| MFA | `com.ompasscloud.sdk:ompass-java-sdk:1.0.1` |
+| MFA | `com.ompasscloud.sdk:ompass-java-sdk:1.0.2` |
 | Build | Maven 3 |
 
 ### Prerequisites
 
-- JDK 17 or later
+- JDK 17 or later (required by Spring Boot 3.2 in this example; the OMPASS Java SDK itself supports **Java 8 and above**)
 - Maven 3.x
 - An **OMPASS** tenant with:
   - `client-id` and `secret-key` issued from the OMPASS admin console
@@ -226,8 +226,8 @@ TBD.
 1. 아이디/이메일/이름/비밀번호로 **회원가입** (H2 인메모리 DB 저장).
 2. 다음 중 한 방식으로 **로그인**:
    - 비밀번호 + OMPASS 2차 인증 (모바일에서 생체/FIDO2로 1회 승인), 또는
-   - 인증기 등록 후 OMPASS만으로 **패스워드리스** 로그인.
-3. **설정**에서 OMPASS 인증기 등록·해제 및 패스워드리스 모드 토글.
+   - 인증장치 등록 후 OMPASS만으로 **패스워드리스** 로그인.
+3. **설정**에서 OMPASS 인증장치 등록·해제 및 패스워드리스 모드 토글.
 
 ### 인증 플로우
 
@@ -258,17 +258,17 @@ sequenceDiagram
 
 | 계층 | 기술 |
 |------|------|
-| 런타임 | Java 17 |
+| 런타임 | Java 17 (이 예제 기준) — **OMPASS SDK 최소 지원 버전은 Java 8** |
 | 프레임워크 | Spring Boot 3.2.0 |
 | 뷰 | Thymeleaf + `thymeleaf-extras-springsecurity6` |
 | 보안 | Spring Security |
 | 영속성 | Spring Data JPA + H2 (인메모리) |
-| MFA | `com.ompasscloud.sdk:ompass-java-sdk:1.0.1` |
+| MFA | `com.ompasscloud.sdk:ompass-java-sdk:1.0.2` |
 | 빌드 | Maven 3 |
 
 ### 사전 요구사항
 
-- JDK 17 이상
+- JDK 17 이상 (이 예제는 Spring Boot 3.2 요구사항 때문이며, OMPASS Java SDK 자체는 **Java 8 이상**에서 동작)
 - Maven 3.x
 - **OMPASS** 테넌트:
   - OMPASS 어드민 콘솔에서 발급받은 `client-id` / `secret-key`
@@ -373,12 +373,12 @@ src/main/resources/
 
 | 메서드 | 경로 | 용도 |
 |--------|------|------|
-| POST | `/auth/check-user` | 사용자의 OMPASS 인증기 등록 여부 조회 |
+| POST | `/auth/check-user` | 사용자의 OMPASS 인증장치 등록 여부 조회 |
 | POST | `/auth/start` | OMPASS 인증 시작, 팝업 URL 반환 |
 | POST | `/auth/login` | 비밀번호 로그인 (등록 사용자는 OMPASS 2FA 트리거) |
-| POST | `/auth/register-ompass` | 설정 화면에서 OMPASS 인증기 등록 시작 |
+| POST | `/auth/register-ompass` | 설정 화면에서 OMPASS 인증장치 등록 시작 |
 | POST | `/auth/toggle-passwordless` | 패스워드리스/2FA 모드 전환 |
-| POST | `/auth/delete-ompass` | 사용자의 모든 OMPASS 인증기 해제 |
+| POST | `/auth/delete-ompass` | 사용자의 모든 OMPASS 인증장치 해제 |
 | GET | `/auth/callback` | OMPASS 리다이렉트 수신 — 토큰 검증 후 세션 생성 |
 
 ### OMPASS SDK 통합 포인트
@@ -389,10 +389,10 @@ src/main/resources/
 |----------------------------|---------------|------|
 | `startAuth(username)` | `OmpassClient.startAuth(AuthStartRequest)` | 인증 챌린지 시작, 팝업 URL 반환 |
 | `verifyToken(username, token)` | `OmpassClient.verifyToken(TokenVerifyRequest)` | `/auth/callback`로 들어온 JWT 검증 |
-| `hasAuthenticators(username)` | `OmpassClient.getAuthenticators(username)` | 등록된 인증기 존재 여부 |
-| `getAuthenticators(username)` | `OmpassClient.getAuthenticators(username)` | 인증기 메타데이터 목록 |
-| `deleteAuthenticator(id)` | `OmpassClient.deleteAuthenticator(id)` | 단일 인증기 해제 |
-| `deleteAllAuthenticators(username)` | 위 두 메서드 반복 | 전체 인증기 해제 |
+| `hasAuthenticators(username)` | `OmpassClient.getAuthenticators(username)` | 등록된 인증장치 존재 여부 |
+| `getAuthenticators(username)` | `OmpassClient.getAuthenticators(username)` | 인증장치 메타데이터 목록 |
+| `deleteAuthenticator(id)` | `OmpassClient.deleteAuthenticator(id)` | 단일 인증장치 해제 |
+| `deleteAllAuthenticators(username)` | 위 두 메서드 반복 | 전체 인증장치 해제 |
 
 ### 다국어 (i18n)
 
