@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{ompass.auth.title}">OMPASS 인증 - DemoMail</title>
+</head>
+<body>
+    <p th:if="${success}" th:text="#{callback.success}">인증 성공!</p>
+    <p th:unless="${success}" th:text="${error}">인증 실패</p>
+
+    <script th:inline="javascript">
+        const success = /*[[${success}]]*/ false;
+
+        if (window.opener) {
+            if (success) {
+                window.opener.location.href = '/home';
+            } else {
+                window.opener.location.href = '/login';
+            }
+            window.close();
+        } else {
+            if (success) {
+                window.location.href = '/home';
+            } else {
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

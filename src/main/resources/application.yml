@@ -1,0 +1,61 @@
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore
+    key-store-password: changeit
+    key-store-type: JKS
+    key-alias: alias
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+
+spring:
+  application:
+    name: ompass-sdk-example
+
+  datasource:
+    url: jdbc:h2:mem:ompassdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+  thymeleaf:
+    cache: false
+
+# OMPASS SDK Configuration
+# Replace with your actual OMPASS credentials
+ompass:
+  client-id: 05eb0cc9-e3dc-45b8-afda-b6b297e2a742
+  secret-key: 07f8040f5ca0601ec5d177991c14d63f899d37582847f8111e912e7b8b0cf2ab
+  base-url: https://api-omstest.staging.ompasscloud.com
+
+logging:
+  file:
+    name: ./logs/app.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+  level:
+    com.ompasscloud: DEBUG
+    root: INFO

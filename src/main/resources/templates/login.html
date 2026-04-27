@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{login.title}">로그인 - DemoMail</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- i18n data for JavaScript -->
+<div id="i18n-data" style="display:none"
+     th:data-username-required="#{login.error.username.required}"
+     th:data-checking="#{login.checking}"
+     th:data-next="#{login.next}"
+     th:data-popup-blocked="#{login.error.popup.blocked}"
+     th:data-ompass-start-fail="#{login.error.ompass.start}">
+</div>
+
+<!-- DEMO Banner -->
+<div class="top-bar">
+    <div class="top-bar-inner">
+        <span class="demo-badge">DEMO</span>
+        <span th:text="#{common.demo.banner}">OMPASS SDK 연동 예제입니다. 실제 서비스가 아닙니다.</span>
+    </div>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+    <div class="header-inner">
+        <a href="/" class="logo">
+            <span class="logo-text">DemoMail</span>
+        </a>
+        <div class="lang-switcher">
+            <a href="?lang=ko">한국어</a>
+            <a href="?lang=en">EN</a>
+            <a href="?lang=ja">日本語</a>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="container">
+
+        <div class="login-content-box" style="max-width: 480px; margin: 0 auto;">
+
+            <!-- Flash Messages -->
+            <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+            <form id="login-form" th:action="@{/auth/login}" method="post" class="login-form active">
+
+                <!-- Step 1: Username -->
+                <div id="step1">
+                    <div class="form-header-row" style="text-align: center;">
+                        <span class="logo-text" style="font-size: 28px;">DemoMail</span>
+                        <h2 style="margin-top: 16px;" th:text="#{login.heading}">로그인</h2>
+                        <p class="form-desc" th:text="#{login.step1.desc}">계정 아이디를 입력하세요.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="username1" th:text="#{login.username.label}">아이디</label>
+                        <input type="text" id="username1" name="username" th:placeholder="#{login.username.placeholder}" placeholder="아이디를 입력하세요" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-block btn-next" onclick="checkUserAndProceed()" th:text="#{login.next}">다음</button>
+                    </div>
+                    <div class="form-links">
+                        <span th:text="#{login.no.account}">계정이 없으신가요?</span>
+                        <a href="/register" class="link" th:text="#{common.register}">회원가입</a>
+                    </div>
+                </div>
+
+                <!-- Step 2: Password (for non-OMPASS users) -->
+                <div id="step2" style="display:none">
+                    <div class="form-header-row" style="text-align: center;">
+                        <span class="logo-text" style="font-size: 28px;">DemoMail</span>
+                        <h2 style="margin-top: 16px;" th:text="#{login.step2.heading}">비밀번호 입력</h2>
+                    </div>
+                    <div style="background: #f8f9fa; border: 1px solid #e8eaed; border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: 14px; color: #202124;">
+                        <span id="step2-username"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="password1" th:text="#{login.password.label}">비밀번호</label>
+                        <input type="password" id="password1" name="password" th:placeholder="#{login.password.placeholder}" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block" th:text="#{login.submit}">로그인</button>
+                    </div>
+                    <div class="form-links">
+                        <a href="javascript:void(0)" class="link" onclick="resetStep1()"><span th:text="#{login.back}">&larr; 뒤로</span></a>
+                    </div>
+                </div>
+
+                <!-- Step OMPASS: Waiting for OMPASS authentication -->
+                <div id="step-ompass" style="display:none">
+                    <div class="form-header-row" style="text-align: center;">
+                        <span class="logo-text" style="font-size: 28px;">DemoMail</span>
+                        <h2 style="margin-top: 16px;" th:text="#{login.ompass.heading}">OMPASS 인증</h2>
+                    </div>
+                    <div style="background: #f8f9fa; border: 1px solid #e8eaed; border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: 14px; color: #202124;">
+                        <span id="ompass-username"></span>
+                    </div>
+                    <div class="ompass-popup-section">
+                        <div class="status-waiting">
+                            <div class="spinner" aria-hidden="true"></div>
+                            <p th:text="#{login.ompass.waiting}">OMPASS 앱에서 인증을 완료해주세요</p>
+                            <p class="form-desc" style="margin-top: 8px; color: #80868b;" th:text="#{login.ompass.timeout}">5분 이내에 인증해주세요</p>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 24px;">
+                        <button type="button" class="btn btn-ompass btn-block" onclick="retryOmpassAuth()" th:text="#{login.ompass.retry}">다시 시도</button>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-secondary btn-block" onclick="resetStep1()" th:text="#{login.ompass.cancel}">취소</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <p style="font-size: 12px; color: #80868b; text-align: center;">DemoMail - OMPASS SDK Example | &copy; 2025</p>
+    </div>
+</footer>
+
+<!-- Flash message handling -->
+<script th:inline="javascript">
+    const flashMessage = /*[[${message}]]*/ null;
+    const flashError = /*[[${error}]]*/ null;
+</script>
+
+<script>
+    const i18n = document.getElementById('i18n-data').dataset;
+    let ompassPopup = null;
+    let currentUsername = '';
+
+    async function checkUserAndProceed() {
+        const username = document.getElementById('username1').value.trim();
+        if (!username) {
+            alert(i18n.usernameRequired);
+            document.getElementById('username1').focus();
+            return;
+        }
+
+        const nextBtn = document.querySelector('#step1 .btn-next');
+        nextBtn.textContent = i18n.checking;
+        nextBtn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('username', username);
+
+            const response = await fetch('/auth/check-user', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            currentUsername = username;
+
+            if (data.ompassRegistered) {
+                startOmpassAuth(username);
+            } else {
+                showPasswordStep(username);
+            }
+        } catch (error) {
+            alert(error.message);
+            nextBtn.textContent = i18n.next;
+            nextBtn.disabled = false;
+        }
+    }
+
+    async function startOmpassAuth(username) {
+        const formData = new FormData();
+        formData.append('username', username);
+
+        try {
+            const response = await fetch('/auth/start', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (!data.success) {
+                alert(i18n.ompassStartFail + ': ' + data.error);
+                resetStep1();
+                return;
+            }
+
+            const width = 500;
+            const height = 700;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+
+            ompassPopup = window.open(
+                data.ompassUrl,
+                'ompass-auth',
+                `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+            );
+
+            if (ompassPopup) {
+                showOmpassWaiting(username);
+            } else {
+                alert(i18n.popupBlocked);
+                resetStep1();
+            }
+        } catch (error) {
+            alert(error.message);
+            resetStep1();
+        }
+    }
+
+    function retryOmpassAuth() {
+        if (currentUsername) {
+            startOmpassAuth(currentUsername);
+        }
+    }
+
+    function showOmpassWaiting(username) {
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step-ompass').style.display = 'block';
+        document.getElementById('ompass-username').textContent = username;
+    }
+
+    function showPasswordStep(username) {
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+        document.getElementById('step2-username').textContent = username;
+        document.getElementById('password1').focus();
+
+        const nextBtn = document.querySelector('#step1 .btn-next');
+        nextBtn.textContent = i18n.next;
+        nextBtn.disabled = false;
+    }
+
+    function resetStep1() {
+        document.getElementById('step1').style.display = 'block';
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step-ompass').style.display = 'none';
+        document.getElementById('username1').focus();
+        currentUsername = '';
+
+        const nextBtn = document.querySelector('#step1 .btn-next');
+        nextBtn.textContent = i18n.next;
+        nextBtn.disabled = false;
+    }
+
+    // Enter key handler
+    document.getElementById('username1').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            checkUserAndProceed();
+        }
+    });
+
+    // Form submit handler
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        const step1 = document.getElementById('step1');
+        if (step1.style.display !== 'none') {
+            e.preventDefault();
+            checkUserAndProceed();
+        }
+    });
+</script>
+
+</body>
+</html>
